@@ -11,7 +11,7 @@ resource "aws_instance" "whisk" {
     user_data = <<-EOF
                 #!/bin/bash
                 echo "Roll-out my-whisk" > index.html
-                nohup busybox httpd -f -p 8080 &
+                nohup busybox httpd -f -p ${var.server_port} &
                 EOF
 
     user_data_replace_on_change = true
@@ -25,10 +25,20 @@ resource "aws_security_group" "whisk_security" {
     name = "whish security instance"
 
     ingress {
-        from_port = 8080
-        to_port = 8080
+        from_port = var.server_port
+        to_port = var.server_port
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
 
+variable "server_port" {
+    description = "ingress port number for incoming & outgoing traffic"
+    type = number
+    default = 8080
+}
+
+output "public_ip" {
+    description = "Public IP address of EC2 Instance"
+    value = aws_instance.whisk.public_ip
+}
